@@ -1202,11 +1202,18 @@ namespace Hb.Windows.Forms
 		/// Contains the index of the first visible byte
 		/// </summary>
 		long _startByte;
+		public long  StartByte
+		{
+			get { return _startByte; }
+		}
 		/// <summary>
 		/// Contains the index of the last visible byte
 		/// </summary>
 		long _endByte;
-
+		public long EndByte
+		{
+			get { return _endByte; }
+		}
 		/// <summary>
 		/// Contains the current byte position
 		/// </summary>
@@ -1325,6 +1332,11 @@ namespace Hb.Windows.Forms
 			{
 				return other.Start == Start && other.End == End;
 			}
+		}
+		public class VisibilityBytesEventArgs : EventArgs
+		{
+			public long StartByte { get; set; }
+			public long EndByte { get; set; }
 		}
 
 		/// <summary>
@@ -1469,6 +1481,8 @@ namespace Hb.Windows.Forms
 		/// </summary>
 		[Description("Occurs, when LineInfoFormat property Changed")]
 		public event EventHandler LineInfoFormatChanged;
+
+		public event EventHandler<VisibilityBytesEventArgs> VisibilityBytesChanged;
 
 		#endregion
 
@@ -4417,6 +4431,10 @@ namespace Hb.Windows.Forms
 		protected virtual void OnLineInfoFormatChanged(EventArgs e)
 		{
 			LineInfoFormatChanged?.Invoke(this, e);
+		}
+		protected virtual void OnVisibilityBytesChanged(VisibilityBytesEventArgs e)
+		{
+			VisibilityBytesChanged?.Invoke(this, e);
 		}
 		#endregion
 
