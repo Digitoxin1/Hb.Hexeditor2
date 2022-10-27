@@ -1333,11 +1333,6 @@ namespace Hb.Windows.Forms
 				return other.Start == Start && other.End == End;
 			}
 		}
-		public class VisibilityBytesEventArgs : EventArgs
-		{
-			public long StartByte { get; set; }
-			public long EndByte { get; set; }
-		}
 
 		/// <summary>
 		/// Hightlighted regions
@@ -1482,7 +1477,7 @@ namespace Hb.Windows.Forms
 		[Description("Occurs, when LineInfoFormat property Changed")]
 		public event EventHandler LineInfoFormatChanged;
 
-		public event EventHandler<VisibilityBytesEventArgs> VisibilityBytesChanged;
+		public event EventHandler VisibilityBytesChanged;
 
 		#endregion
 
@@ -3033,8 +3028,16 @@ namespace Hb.Windows.Forms
 			if (_byteProvider == null || _byteProvider.Length == 0)
 				return;
 
+			long prevStartByte = _startByte;
+			long prevEndByte = _endByte;
+
 			_startByte = (_scrollVpos + 1) * _iHexMaxHBytes - _iHexMaxHBytes;
 			_endByte = (long)Math.Min(_byteProvider.Length - 1, _startByte + _iHexMaxBytes);
+
+			if (prevStartByte != _startByte || prevEndByte != _endByte)
+			{
+				OnVisibilityBytesChanged(EventArgs.Empty);
+			}
 		}
 		#endregion
 
@@ -4432,7 +4435,7 @@ namespace Hb.Windows.Forms
 		{
 			LineInfoFormatChanged?.Invoke(this, e);
 		}
-		protected virtual void OnVisibilityBytesChanged(VisibilityBytesEventArgs e)
+		protected virtual void OnVisibilityBytesChanged(EventArgs e)
 		{
 			VisibilityBytesChanged?.Invoke(this, e);
 		}
