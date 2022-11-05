@@ -128,7 +128,7 @@ namespace Hb.Windows.Forms
 			/// <summary>
 			/// Contains all message handlers of key interpreter key down message
 			/// </summary>
-			Dictionary<Keys, MessageDelegate> _messageHandlers;
+			Dictionary<Keys, MessageDelegate> _messageHandlers;			
 			#endregion
 
 			#region Ctors
@@ -669,7 +669,7 @@ namespace Hb.Windows.Forms
 			#region PreProcessWmChar methods
 			public virtual bool PreProcessWmChar(ref Message m)
 			{
-				if (Control.ModifierKeys == Keys.Control)
+                if (Control.ModifierKeys == Keys.Control)
 				{
 					return _hexBox.BasePreProcessMessage(ref m);
 				}
@@ -735,8 +735,12 @@ namespace Hb.Windows.Forms
 					if (isInsertMode)
 						_hexBox._byteProvider.InsertBytes(pos, new byte[] { newcb });
 					else
-						_hexBox._byteProvider.WriteByte(pos, newcb);
+					{
+                        byte PrevByte = _hexBox._byteProvider.ReadByte(pos);
+                        _hexBox._byteProvider.WriteByte(pos, newcb);
+                        _hexBox.OnByteChanged(new ByteChangedArgs(pos, PrevByte, newcb, _hexBox.SelectionStart, _hexBox.SelectionLength));
 
+                    }
 					PerformPosMoveRight();
 
 					_hexBox.Invalidate();
@@ -1036,7 +1040,7 @@ namespace Hb.Windows.Forms
 			#region PreProcessWmChar methods
 			public override bool PreProcessWmChar(ref Message m)
 			{
-				if (Control.ModifierKeys == Keys.Control)
+                if (Control.ModifierKeys == Keys.Control)
 				{
 					return _hexBox.BasePreProcessMessage(ref m);
 				}
@@ -1084,7 +1088,11 @@ namespace Hb.Windows.Forms
 				if (isInsertMode)
 					_hexBox._byteProvider.InsertBytes(pos, new byte[] { b });
 				else
-					_hexBox._byteProvider.WriteByte(pos, b);
+				{
+                    byte PrevByte = _hexBox._byteProvider.ReadByte(pos);
+                    _hexBox._byteProvider.WriteByte(pos, b);
+                    _hexBox.OnByteChanged(new ByteChangedArgs(pos, PrevByte, b, _hexBox.SelectionStart, _hexBox.SelectionLength));
+                }
 
 				PerformPosMoveRightByte();
 				_hexBox.Invalidate();
@@ -1479,14 +1487,39 @@ namespace Hb.Windows.Forms
 
 		public event EventHandler VisibilityBytesChanged;
 
-		#endregion
+        public delegate void ByteChangeEventHandler(object source, ByteChangedArgs e);
+        public class ByteChangedArgs: EventArgs
+		{
+			public ByteChangedArgs(long Index, byte PrevValue, byte Value, long SelectionStart, long SelectionLength)
+			{
+				this.Index = Index;
+				this.PrevValue = PrevValue;
+				this.Value = Value;
+				this.SelectionStart = SelectionStart;
+				this.SelectionLength = SelectionLength;
+			}
+            public long Index
+            { get; set; }
+            public byte PrevValue
+            { get; set; }
+            public byte Value
+            { get; set; }
+            public long SelectionStart
+            { get; set; }
+            public long SelectionLength
+            { get; set; }
+        }
 
-		#region Ctors
+        public event ByteChangeEventHandler ByteChanged;
 
-		/// <summary>
-		/// Initializes a new instance of a HexBox class.
-		/// </summary>
-		public HexBox()
+        #endregion
+
+        #region Ctors
+
+        /// <summary>
+        /// Initializes a new instance of a HexBox class.
+        /// </summary>
+        public HexBox()
 		{
 			this._vScrollBar = new VScrollBar();
 			this._vScrollBar.Scroll += new ScrollEventHandler(_vScrollBar_Scroll);
@@ -4439,15 +4472,19 @@ namespace Hb.Windows.Forms
 		{
 			VisibilityBytesChanged?.Invoke(this, e);
 		}
-		#endregion
+        protected virtual void OnByteChanged(ByteChangedArgs e)
+        {
+            ByteChanged?.Invoke(this, e);
+        }
+        #endregion
 
-		#region Scaling Support for High DPI resolution screens
-		/// <summary>
-		/// For high resolution screen support
-		/// </summary>
-		/// <param name="factor">the factor</param>
-		/// <param name="specified">bounds</param>
-		protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
+        #region Scaling Support for High DPI resolution screens
+        /// <summary>
+        /// For high resolution screen support
+        /// </summary>
+        /// <param name="factor">the factor</param>
+        /// <param name="specified">bounds</param>
+        protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 		{
 			base.ScaleControl(factor, specified);
 
