@@ -736,9 +736,12 @@ namespace Hb.Windows.Forms
 						_hexBox._byteProvider.InsertBytes(pos, new byte[] { newcb });
 					else
 					{
-                        byte PrevByte = _hexBox._byteProvider.ReadByte(pos);
+                        byte prevByte = _hexBox._byteProvider.ReadByte(pos);
                         _hexBox._byteProvider.WriteByte(pos, newcb);
-                        _hexBox.OnByteChanged(new ByteChangedArgs(pos, PrevByte, newcb, _hexBox.SelectionStart, _hexBox.SelectionLength));
+						if (prevByte != newcb)
+						{
+							_hexBox.OnByteChanged(new ByteChangedArgs(pos, prevByte, newcb));
+						}
 
                     }
 					PerformPosMoveRight();
@@ -1091,7 +1094,10 @@ namespace Hb.Windows.Forms
 				{
                     byte PrevByte = _hexBox._byteProvider.ReadByte(pos);
                     _hexBox._byteProvider.WriteByte(pos, b);
-                    _hexBox.OnByteChanged(new ByteChangedArgs(pos, PrevByte, b, _hexBox.SelectionStart, _hexBox.SelectionLength));
+					if (PrevByte != b)
+					{
+						_hexBox.OnByteChanged(new ByteChangedArgs(pos, PrevByte, b));
+					}
                 }
 
 				PerformPosMoveRightByte();
@@ -1490,23 +1496,17 @@ namespace Hb.Windows.Forms
         public delegate void ByteChangeEventHandler(object source, ByteChangedArgs e);
         public class ByteChangedArgs: EventArgs
 		{
-			public ByteChangedArgs(long Index, byte PrevValue, byte Value, long SelectionStart, long SelectionLength)
+			public ByteChangedArgs(long Index, byte PrevValue, byte Value)
 			{
 				this.Index = Index;
 				this.PrevValue = PrevValue;
 				this.Value = Value;
-				this.SelectionStart = SelectionStart;
-				this.SelectionLength = SelectionLength;
 			}
             public long Index
             { get; set; }
             public byte PrevValue
             { get; set; }
             public byte Value
-            { get; set; }
-            public long SelectionStart
-            { get; set; }
-            public long SelectionLength
             { get; set; }
         }
 
@@ -1970,7 +1970,7 @@ namespace Hb.Windows.Forms
 			_caretVisible = false;
 		}
 
-		void SetCaretPosition(Point p)
+		public void SetCaretPosition(Point p)
 		{
 			System.Diagnostics.Debug.WriteLine("SetCaretPosition()", "HexBox");
 
