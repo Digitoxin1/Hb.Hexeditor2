@@ -6,6 +6,7 @@ using System.Security.Permissions;
 using System.Windows.Forms.VisualStyles;
 using System.Text;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Hb.Windows.Forms
 {
@@ -4033,23 +4034,35 @@ namespace Hb.Windows.Forms
 		{
 			if (string.IsNullOrEmpty(hex))
 				return null;
+
 			hex = hex.Trim();
-			string[] hexArray ; //hex.Split(' ');
-			//added parse hexstring no whitespaces version 2.0.1
-			if (hex.IndexOf(" ") < 0)
-			{
-				hexArray = new string[hex.Length / 2];
-				for (int i = 0; i < hex.Length / 2; i++)
-				{
-					hexArray[i] = hex.Substring(i * 2, 2);
 
-				}
-			}
-			//ver 2.0.1
-			else hexArray = hex.Split();
-		
+            var regex = new Regex("^[0-9A-F]*$", RegexOptions.IgnoreCase);
+            var regexSpaces = new Regex("^([0-9A-F]{1,2} )*([0-9A-F]{1,2})?$", RegexOptions.IgnoreCase);
 
-			byte[] byteArray = new byte[hexArray.Length];
+            string[] hexArray ; //hex.Split(' ');
+            //added parse hexstring no whitespaces version 2.0.1
+            if (regexSpaces.IsMatch(hex))
+            {
+                hexArray = hex.Split();
+            }
+            else if (regex.IsMatch(hex))
+            {
+                if (hex.Length % 2 == 1)
+                {
+                    hex = "0" + hex;
+                }
+                hexArray = new string[(int)Math.Round(hex.Length / 2d - 1d + 1)];
+                for (int i = 0, loopTo = (int)Math.Round(hex.Length / 2d - 1d); i <= loopTo; i++)
+                    hexArray[i] = hex.Substring(i * 2, 2);
+            }
+            else
+            {
+                return null;
+            }
+
+
+            byte[] byteArray = new byte[hexArray.Length];
 			for (int i = 0; i < hexArray.Length; i++)
 			{
 				var hexValue = hexArray[i];
