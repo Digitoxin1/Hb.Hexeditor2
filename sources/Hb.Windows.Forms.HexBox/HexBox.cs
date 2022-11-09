@@ -1657,7 +1657,8 @@ namespace Hb.Windows.Forms
 				_vScrollBar.Maximum = max;
 				_vScrollBar.Value = ToScrollPos(_scrollVpos);
 				_vScrollBar.Visible = true;
-			}
+                _thumbTrackPosition = FromScrollPos(_vScrollBar.Value);
+            }
 			else
 			{
 				_vScrollBar.Visible = false;
