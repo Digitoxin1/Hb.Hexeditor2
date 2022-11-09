@@ -1704,7 +1704,7 @@ namespace Hb.Windows.Forms
 				return (int)value;
 		}
 
-		void PerformScrollToLine(long pos)
+		public void PerformScrollToLine(long pos)
 		{
 			if (pos < _scrollVmin || pos > _scrollVmax || pos == _scrollVpos)
 				return;
