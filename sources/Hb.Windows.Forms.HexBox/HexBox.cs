@@ -30,6 +30,7 @@ namespace Hb.Windows.Forms
 			/// Deactivate mouse events
 			/// </summary>
 			void Deactivate();
+			void ClearShiftDown();
 			/// <summary>
 			/// Preprocesses WM_KEYUP window message.
 			/// </summary>
@@ -73,6 +74,7 @@ namespace Hb.Windows.Forms
 
 			#region IKeyInterpreter Members
 			public void Activate() { }
+			public void ClearShiftDown() { }
 			public void Deactivate() { }
 
 			public bool PreProcessWmKeyUp(ref Message m)
@@ -984,8 +986,13 @@ namespace Hb.Windows.Forms
 			{
 				return _hexBox.GetHexBytePositionInfo(p);
 			}
-			#endregion
-		}
+
+            void IKeyInterpreter.ClearShiftDown()
+            {
+				_shiftDown = false;
+            }
+            #endregion
+        }
 		#endregion
 
 		#region StringKeyInterpreter class
@@ -1195,7 +1202,7 @@ namespace Hb.Windows.Forms
 		/// <summary>
 		/// Contains the Enviroment.TickCount of the last refresh
 		/// </summary>
-		int _lastThumbtrack;
+		int _lastThumbtrack = System.Environment.TickCount;
 		/// <summary>
 		/// Contains the border´s left shift
 		/// </summary>
@@ -1525,7 +1532,7 @@ namespace Hb.Windows.Forms
 			this._vScrollBar = new VScrollBar();
 			this._vScrollBar.Scroll += new ScrollEventHandler(_vScrollBar_Scroll);
 
-			this._builtInContextMenu = new BuiltInContextMenu(this);
+            this._builtInContextMenu = new BuiltInContextMenu(this);
 
 			BackColor = Color.White;
 			Font = SystemFonts.MessageBoxFont;
@@ -4447,7 +4454,10 @@ namespace Hb.Windows.Forms
 			base.OnLostFocus(e);
 
 			DestroyCaret();
-		}
+            if (_keyInterpreter != null)
+                _keyInterpreter.ClearShiftDown();
+
+        }
 
 		void _byteProvider_LengthChanged(object sender, EventArgs e)
 		{
