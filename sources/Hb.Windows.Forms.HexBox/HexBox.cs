@@ -1502,6 +1502,8 @@ namespace Hb.Windows.Forms
 		public event EventHandler VisibilityBytesChanged;
 
         public delegate void ByteChangeEventHandler(object source, ByteChangedArgs e);
+
+		public delegate void AfterPaintEventHandler(object source, PaintEventArgs e);
         public class ByteChangedArgs: EventArgs
 		{
 			public ByteChangedArgs(long Index, byte PrevValue, byte Value)
@@ -1519,6 +1521,8 @@ namespace Hb.Windows.Forms
         }
 
         public event ByteChangeEventHandler ByteChanged;
+
+		public event AfterPaintEventHandler AfterPaint;
 
         #endregion
 
@@ -2677,6 +2681,8 @@ namespace Hb.Windows.Forms
 				PaintHeaderRow(e.Graphics);
 			if (_groupSeparatorVisible)
 				PaintColumnSeparator(e.Graphics);
+
+			AfterPaint?.Invoke(this, e);
 		}
 
 
